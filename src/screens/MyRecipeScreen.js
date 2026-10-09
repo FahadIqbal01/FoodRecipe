@@ -20,33 +20,70 @@ import {
     const [recipes, setrecipes] = useState([]);
     const [loading, setLoading] = useState(true);
   
+    // Task 4: Complete fetchrecipes function inside useEffect
     useEffect(() => {
       const fetchrecipes = async () => {
-        
-        };
+        try {
+          const storedRecipes = await AsyncStorage.getItem("customrecipes");
+          if (storedRecipes) {
+            setrecipes(JSON.parse(storedRecipes));
+          }
+        } catch (error) {
+          console.error("Error fetching recipes:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
   
       fetchrecipes();
     }, []);
   
+    // Task 6: Navigate to RecipesFormScreen to add a new recipe
     const handleAddrecipe = () => {
-
+      navigation.navigate("RecipesFormScreen");
     };
   
+    // Task 5: Navigate to CustomRecipesScreen passing selected recipe
     const handlerecipeClick = (recipe) => {
-
-    };
-    const deleterecipe = async (index) => {
-    
+      navigation.navigate("CustomRecipesScreen", { recipe });
     };
   
+    // Task 7 & 8: Delete recipe from AsyncStorage and State
+    const deleterecipe = async (index) => {
+      try {
+        const updatedrecipes = [...recipes];
+        updatedrecipes.splice(index, 1);
+        await AsyncStorage.setItem(
+          "customrecipes",
+          JSON.stringify(updatedrecipes)
+        );
+        setrecipes(updatedrecipes);
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+      }
+    };
+  
+    // Task 9: Navigate to RecipesFormScreen for editing
     const editrecipe = (recipe, index) => {
-
+      navigation.navigate("RecipesFormScreen", {
+        recipeToEdit: recipe,
+        recipeIndex: index,
+        onrecipeEdited: async () => {
+          const updatedStorage = await AsyncStorage.getItem("customrecipes");
+          if (updatedStorage) {
+            setrecipes(JSON.parse(updatedStorage));
+          }
+        },
+      });
     };
   
     return (
       <View style={styles.container}>
         {/* Back Button */}
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Text style={styles.backButtonText}>{"Back"}</Text>
         </TouchableOpacity>
   
@@ -63,18 +100,49 @@ import {
             ) : (
               recipes.map((recipe, index) => (
                 <View key={index} style={styles.recipeCard} testID="recipeCard">
-                  <TouchableOpacity testID="handlerecipeBtn" onPress={() => handlerecipeClick(recipe)}>
-                  
+                  <TouchableOpacity
+                    testID="handlerecipeBtn"
+                    onPress={() => handlerecipeClick(recipe)}
+                  >
+                    {/* Task 1: Conditional Image Rendering */}
+                    {recipe.image ? (
+                      <Image
+                        source={{ uri: recipe.image }}
+                        style={styles.recipeImage}
+                        resizeMode="cover"
+                      />
+                    ) : null}
+  
                     <Text style={styles.recipeTitle}>{recipe.title}</Text>
+  
+                    {/* Task 2: Description preview truncated to 50 characters */}
                     <Text style={styles.recipeDescription} testID="recipeDescp">
-                  
+                      {recipe.description
+                        ? recipe.description.length > 50
+                          ? `${recipe.description.substring(0, 50)}...`
+                          : recipe.description
+                        : ""}
                     </Text>
                   </TouchableOpacity>
   
-                  {/* Edit and Delete Buttons */}
-                  <View style={styles.actionButtonsContainer} testID="editDeleteButtons">
-                    
-                
+                  {/* Task 3: Edit and Delete Buttons */}
+                  <View
+                    style={styles.actionButtonsContainer}
+                    testID="editDeleteButtons"
+                  >
+                    <TouchableOpacity
+                      onPress={() => editrecipe(recipe, index)}
+                      style={styles.editButton}
+                    >
+                      <Text style={styles.editButtonText}>Edit</Text>
+                    </TouchableOpacity>
+  
+                    <TouchableOpacity
+                      onPress={() => deleterecipe(index)}
+                      style={styles.deleteButton}
+                    >
+                      <Text style={styles.deleteButtonText}>Delete</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               ))
@@ -100,12 +168,11 @@ import {
     },
     addButton: {
       backgroundColor: "#4F75FF",
-      padding: wp(.7),
+      padding: wp(0.7),
       alignItems: "center",
       borderRadius: 5,
-      width:300,
-     marginLeft:500
-      // marginBottom: hp(2),
+      width: 300,
+      marginLeft: 500,
     },
     addButtonText: {
       color: "#fff",
@@ -114,12 +181,12 @@ import {
     },
     scrollContainer: {
       paddingBottom: hp(2),
-      height:'auto',
-      display:'flex',
-      alignItems:'center',
-      justifyContent:'center',
-      flexDirection:'row',
-      flexWrap:'wrap'
+      height: "auto",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
     },
     norecipesText: {
       textAlign: "center",
@@ -164,7 +231,7 @@ import {
     },
     editButton: {
       backgroundColor: "#34D399",
-      padding: wp(.5),
+      padding: wp(0.5),
       borderRadius: 5,
       width: 100, // Adjust width of buttons to be more compact
       alignItems: "center",
@@ -176,7 +243,7 @@ import {
     },
     deleteButton: {
       backgroundColor: "#EF4444",
-      padding: wp(.5),
+      padding: wp(0.5),
       borderRadius: 5,
       width: 100, // Adjust width of buttons to be more compact
       alignItems: "center",
@@ -187,4 +254,3 @@ import {
       fontSize: hp(1.8),
     },
   });
-  
