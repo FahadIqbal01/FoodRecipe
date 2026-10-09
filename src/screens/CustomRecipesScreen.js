@@ -20,15 +20,19 @@ import {
     const dispatch = useDispatch();
   
     const route = useRoute();
-    const { recipe } = route.params || {}; // Pass the  object as a parameter
-    console.log('recipe',recipe);
-    
+    const { recipe, index = 0 } = route.params || {}; // Pass the object and index as parameters
+    console.log("recipe", recipe);
+  
     const favoriteRecipe = useSelector(
       (state) => state.favorites.favoriterecipes
     );
-    console.log('favoriteRecipe from custom',favoriteRecipe);
-    
-    const isFavourite = favoriteRecipe.includes(recipe.idCategory); // Adjust this according to your recipe structure
+    console.log("favoriteRecipe from custom", favoriteRecipe);
+  
+    const isFavourite = favoriteRecipe?.some(
+      (fav) =>
+        (fav.idFood || fav.title || fav.id) ===
+        (recipe?.idFood || recipe?.title || recipe?.id)
+    );
   
     if (!recipe) {
       return (
@@ -39,45 +43,55 @@ import {
     }
   
     const handleToggleFavorite = () => {
-      dispatch(toggleFavorite(recipe)); // Adjust the action to handle recipe
+      dispatch(toggleFavorite(recipe)); // Toggle favorite status
     };
   
     return (
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent} testID="scrollContent"
+        contentContainerStyle={styles.scrollContent}
+        testID="scrollContent"
       >
-        {/* Recipe Image */}
+        {/* Task 1 & 2: Recipe Image Container */}
         <View style={styles.imageContainer} testID="imageContainer">
-        {recipe.image && (
-            <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
-          )}
+          {recipe.image ? (
+            <Image
+              source={{ uri: recipe.image }}
+              style={[
+                styles.articleImage,
+                { height: index % 3 === 0 ? hp(25) : hp(35) },
+              ]}
+              resizeMode="cover"
+            />
+          ) : null}
         </View>
-        <View
-          style={styles.topButtonsContainer} testID="topButtonsContainer"
-        >
+  
+        {/* Task 3: Top Navigation Buttons */}
+        <View style={styles.topButtonsContainer} testID="topButtonsContainer">
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
-            <Text>Back</Text>
+            <Text style={styles.backButtonText}>GoBack</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleToggleFavorite}
             style={styles.favoriteButton}
           >
-            <Text>{isFavourite ? "♥" : "♡"}</Text>
+            <Text style={styles.favoriteButtonText}>
+              {isFavourite ? "♥" : "♡"}
+            </Text>
           </TouchableOpacity>
         </View>
   
-        {/* Recipe Details */}
+        {/* Task 4 & 5: Content Container */}
         <View style={styles.contentContainer} testID="contentContainer">
-        <Text style={styles.recipeTitle}>{recipe.title}</Text>
-  <View style={styles.sectionContainer}>
-    <Text style={styles.sectionTitle}>Content</Text>
-    <Text style={styles.contentText}>{recipe.description}</Text>
-  </View>
+          <Text style={styles.recipeTitle}>{recipe.title}</Text>
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Content</Text>
+            <Text style={styles.contentText}>{recipe.description}</Text>
+          </View>
         </View>
       </ScrollView>
     );
@@ -95,13 +109,13 @@ import {
       flexDirection: "row",
       justifyContent: "center",
     },
-    recipeImage: {
+    articleImage: {
       width: wp(98),
-      height: hp(50),
       borderRadius: 35,
       borderBottomLeftRadius: 40,
       borderBottomRightRadius: 40,
       marginTop: 4,
+      backgroundColor: "rgba(0, 0, 0, 0.05)",
     },
     contentContainer: {
       paddingHorizontal: wp(4),
@@ -136,15 +150,29 @@ import {
       marginLeft: wp(5),
       backgroundColor: "white",
     },
+    backButtonText: {
+      fontSize: hp(1.8),
+      fontWeight: "600",
+      color: "#333",
+    },
     favoriteButton: {
       padding: 8,
       borderRadius: 50,
       marginRight: wp(5),
       backgroundColor: "white",
     },
+    favoriteButtonText: {
+      fontSize: hp(2),
+      color: "red",
+    },
     contentText: {
       fontSize: hp(1.6),
       color: "#4B5563",
     },
+    title: {
+      fontSize: hp(2.5),
+      textAlign: "center",
+      marginTop: hp(10),
+      color: "#6B7280",
+    },
   });
-  
