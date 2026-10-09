@@ -17,19 +17,43 @@ import {
 export default function FavoriteScreen() {
   const navigation = useNavigation();
 
-  // Assuming you have a similar structure for recipes in your Redux store
+  // Retrieve recipes from Redux store
   const favoriteRecipes = useSelector((state) => state.favorites);
   const favoriteRecipesList = favoriteRecipes?.favoriterecipes || [];
   console.log(favoriteRecipes.favoriterecipes);
-  console.log('favoriteRecipesList',favoriteRecipesList);
-  
-  
+  console.log("favoriteRecipesList", favoriteRecipesList);
+
+  const renderFavoriteCard = ({ item }) => {
+    const title =
+      item.recipeName || "Recipe";
+    const truncatedTitle =
+      title.length > 20 ? `${title.slice(0, 20)}...` : title;
+    const imageUrl =
+      item.recipeImage || item.strMealThumb || item.image;
+
+    return (
+      <TouchableOpacity
+        style={styles.cardContainer}
+        onPress={() => navigation.navigate("RecipeDetail", { ...item })}
+        activeOpacity={0.8}
+      >
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.recipeImage}
+          resizeMode="cover"
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.recipeTitle}>{truncatedTitle}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (favoriteRecipesList.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No favorite recipes yet!</Text>
-        {/* add back button */}
+        {/* Back button for empty state */}
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={{
@@ -38,7 +62,7 @@ export default function FavoriteScreen() {
             borderRadius: 5,
             marginTop: 10,
             width: 100,
-            alignItems: "center ",
+            alignItems: "center",
           }}
         >
           <Text style={{ color: "#fff" }}>Go back</Text>
@@ -48,9 +72,9 @@ export default function FavoriteScreen() {
   }
 
   return (
-    <>
-      {/* Heading */}
-      <View testID="FavoriteRecipes">
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* Task 1: Heading */}
+      <View testID="favoriteRecipes">
         <Text
           style={{ fontSize: hp(3.8), marginTop: hp(4), marginLeft: 20 }}
           className="font-semibold text-neutral-600"
@@ -58,7 +82,8 @@ export default function FavoriteScreen() {
           My Favorite Recipes
         </Text>
       </View>
-    
+
+      {/* Task 1: Go Back Button */}
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={{
@@ -69,12 +94,29 @@ export default function FavoriteScreen() {
           width: 100,
           alignItems: "center",
           marginLeft: 20,
+          marginBottom: 10,
         }}
       >
         <Text style={{ color: "#fff" }}>Go back</Text>
       </TouchableOpacity>
-    
-    </>
+
+      {/* Task 2: FlatList to display favorite recipes */}
+      <FlatList
+        data={favoriteRecipesList}
+        contentContainerStyle={styles.listContentContainer}
+        keyExtractor={(item, index) =>
+          item.idC
+            ? item.idC.toString()
+            : item.idFood
+            ? item.idFood.toString()
+            : item.idMeal
+            ? item.idMeal.toString()
+            : index.toString()
+        }
+        renderItem={renderFavoriteCard}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
   );
 }
 
